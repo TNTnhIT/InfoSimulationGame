@@ -6,15 +6,22 @@ import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Server {
+public class Server implements Runnable{
     ServerSocket serverSocket;
     List<ClientHandler> clients;
+    int port;
 
 
     public Server(int port) {
         //quasi Thread Save Variante von ArrayList
         clients = new CopyOnWriteArrayList<>();
+        this.port = port;
+        new Thread(this).start();
+    }
 
+
+    @Override
+    public void run() {
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Started chat server on port " + port);

@@ -1,6 +1,11 @@
+import client.TestClientForm;
+import server.Server;
+
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world!");
+        Server server = new Server(8080);
+        System.out.println("Test");
+        TestClientForm.start();
 
     }
 }

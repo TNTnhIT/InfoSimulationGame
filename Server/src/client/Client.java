@@ -106,7 +106,7 @@ public class Client implements Settings{
 
         @Override
         public void run() {
-            this.setDaemon(true);
+            //this.setDaemon(true);
 
             while(true) {
                 try{
