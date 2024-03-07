@@ -1,4 +1,4 @@
-package Settings;
+package settings;
 
 /**
  * An Interface used for constants when communicating with the server
@@ -49,22 +49,40 @@ public interface Settings {
      */
     int RECEIVE_OTHER_ERROR = -1;
 
-
     //The same constants but as an enum, in case someone wants to use those
 
     public enum SENDER{
-        FRIENDLY(0), AGGRESSIVE(1), ERROR(-1);
+        FRIENDLY(Settings.SEND_FRIENDLY),
+        AGGRESSIVE(Settings.SEND_AGGRESSIVE),
+        ERROR(SEND_ERROR);
         public int num;
         SENDER(int num) {
             this.num = num;
         }
+        public static SENDER valueOf(int i) {
+           for(SENDER s: SENDER.values())
+               if(s.num == i) return s;
+           return ERROR;
+        }
     }
     public enum RECEIVER {
-        FRIENDLY(0), AGGRESSIVE(1), RECEIVE_OTHER_PLAYER_FRIENDLY(2), RECEIVE_OTHER_PLAYER_AGGRESSIVE(3), GAME_END(2),
-        WRONG_MESSAGE(-2), TO_FAST(-3), OTHER_ERROR(-1);
+        FRIENDLY(Settings.RECEIVE_FRIENDLY),
+        AGGRESSIVE(Settings.RECEIVE_AGGRESSIVE),
+        OTHER_PLAYER_FRIENDLY(Settings.RECEIVE_OTHER_PLAYER_FRIENDLY),
+        OTHER_PLAYER_AGGRESSIVE(Settings.RECEIVE_OTHER_PLAYER_AGGRESSIVE),
+        GAME_END(Settings.RECEIVE_GAME_END),
+        WRONG_MESSAGE(Settings.RECEIVE_WRONG_MESSAGE),
+        TO_FAST(Settings.RECEIVE_TO_FAST),
+        OTHER_ERROR(Settings.RECEIVE_OTHER_ERROR);
         public int num;
         RECEIVER(int num) {
             this.num = num;
+        }
+
+        public static RECEIVER valueOf(int i) {
+           for(RECEIVER r: RECEIVER.values())
+               if(r.num == i) return r;
+           return OTHER_ERROR;
         }
     }
 
