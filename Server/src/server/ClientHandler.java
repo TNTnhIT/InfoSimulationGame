@@ -4,6 +4,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import settings.Settings;
 
 public class ClientHandler implements Runnable{
 
@@ -23,6 +24,7 @@ public class ClientHandler implements Runnable{
     }
 
     public void sendMessage(String msg) {
+        System.out.println("Hi");
         try {
             os.writeUTF(msg);
             os.flush();
@@ -43,7 +45,18 @@ public class ClientHandler implements Runnable{
                 String msg = is.readUTF();
                 if(msg != null) {
                     System.out.println("Message received:" + msg);
+                    try {
 
+                       int codeInt = Integer.parseInt(msg);
+                       Settings.SENDER sender = Settings.SENDER.valueOf(codeInt);
+                       switch (sender) {
+                           case FRIENDLY -> sendMessage(String.valueOf(Settings.RECEIVER.FRIENDLY.num));
+                           case AGGRESSIVE -> sendMessage(String.valueOf(Settings.RECEIVER.AGGRESSIVE.num));
+                           case ERROR -> System.err.println("received Error");
+                       }
+                    }catch (NumberFormatException e) {
+                        System.err.println("Not a Number " + msg);
+                    }
                 }
             }
 
