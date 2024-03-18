@@ -17,6 +17,9 @@ public class ClientHandler implements Runnable{
 
     private int opponent;
 
+    private Game.SmallGame game;
+    private int player;
+
     public ClientHandler(Server server, Socket connectionToClient) {
         this.server = server;
         this.connectionToClient = connectionToClient;
@@ -38,6 +41,11 @@ public class ClientHandler implements Runnable{
 
     public void setOpponent(int opponent) {
         this.opponent = opponent;
+    }
+
+    public void setSmallGame(Game.SmallGame game, int player) {
+        this.game = game;
+        this.player = player;
     }
 
     @Override
