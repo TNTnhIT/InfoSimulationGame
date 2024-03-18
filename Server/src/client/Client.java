@@ -32,6 +32,8 @@ public class Client implements Settings{
     //Message Handling
     private void gotMessage() {
         String message = messages.getFirst();
+        messages.removeFirst();
+        System.out.println("Got Message: " + message); //TODO
         int codeInt = Integer.parseInt(message);
         RECEIVER code = RECEIVER.valueOf(codeInt);
         switch (code) {
@@ -112,7 +114,7 @@ public class Client implements Settings{
                 try{
                     String s = is.readUTF();
                     //Only adds messages with content
-                    if(!messages.isEmpty()) {
+                    if(!s.isEmpty()) {
                         messages.add(s);
                         System.out.println(s);
                         gotMessage();

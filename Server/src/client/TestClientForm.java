@@ -37,26 +37,26 @@ public class TestClientForm extends Client{
     @Override
     public void gotMyselfFriendly() {
         super.gotMyselfFriendly();
-        lblMyself.setText("Friendly");
+        txtMyself.setText("Friendly");
     }
 
     @Override
     public void gotMyselfAggressive() {
         super.gotMyselfAggressive();
-        lblMyself.setText("Aggressive");
+        txtMyself.setText("Aggressive");
     }
 
     @Override
     public void gotOtherFriendly() {
         super.gotOtherFriendly();
-        lblOther.setText("Friendly");
+        txtOther.setText("Friendly");
 
     }
 
     @Override
     public void gotOtherAggressive() {
         super.gotOtherAggressive();
-        lblOther.setText("Aggressive");
+        txtOther.setText("Aggressive");
     }
 
     public static void start() {

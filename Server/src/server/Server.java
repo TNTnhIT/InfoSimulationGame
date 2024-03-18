@@ -11,11 +11,14 @@ public class Server implements Runnable{
     List<ClientHandler> clients;
     int port;
 
+    boolean hasGameStarted;
+
 
     public Server(int port) {
         //quasi Thread Save Variante von ArrayList
         clients = new CopyOnWriteArrayList<>();
         this.port = port;
+        this.hasGameStarted = false;
         new Thread(this).start();
     }
 
@@ -25,12 +28,16 @@ public class Server implements Runnable{
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Started chat server on port " + port);
-            while(true) {
+            while(!hasGameStarted) {
+                if(clients.size() == 2) //TODO test code
+                    setOpponent(0,1);
                 System.out.println("Waiting for new client...");
                 Socket connectionToClient = serverSocket.accept();
-                ClientHandler client = new ClientHandler(this, connectionToClient);
-                clients.add(client);
-                System.out.println("Accepted new client:" + connectionToClient.getInetAddress());
+                if(!hasGameStarted) {
+                    ClientHandler client = new ClientHandler(this, connectionToClient);
+                    clients.add(client);
+                    System.out.println("Accepted new client:" + connectionToClient.getInetAddress());
+                }
             }
 
         } catch (IOException e) {
@@ -43,6 +50,23 @@ public class Server implements Runnable{
                 e.printStackTrace();
             }
         }
+    }
+
+    public void setOpponent(int player1, int player2) {
+        System.out.println("Opponent"); //TODO test code
+        clients.get(player1).setOpponent(player2);
+        clients.get(player2).setOpponent(player1);
+    }
+
+
+
+    public int startFullGame() {
+           hasGameStarted = false;
+           return clients.size();
+    }
+
+    public boolean startGame() {
+        return false;
     }
 
     public void broadcastMessage(String msg) {

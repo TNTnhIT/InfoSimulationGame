@@ -15,10 +15,13 @@ public class ClientHandler implements Runnable{
 
     private String name;
 
+    private int opponent;
+
     public ClientHandler(Server server, Socket connectionToClient) {
         this.server = server;
         this.connectionToClient = connectionToClient;
         name = connectionToClient.getInetAddress().getHostAddress();
+        this.opponent = -1;
 
         new Thread(this).start();
     }
@@ -33,6 +36,9 @@ public class ClientHandler implements Runnable{
         }
     }
 
+    public void setOpponent(int opponent) {
+        this.opponent = opponent;
+    }
 
     @Override
     public void run() {
@@ -50,9 +56,17 @@ public class ClientHandler implements Runnable{
                        int codeInt = Integer.parseInt(msg);
                        Settings.SENDER sender = Settings.SENDER.valueOf(codeInt);
                        switch (sender) {
-                           case FRIENDLY -> sendMessage(String.valueOf(Settings.RECEIVER.FRIENDLY.num));
-                           case AGGRESSIVE -> sendMessage(String.valueOf(Settings.RECEIVER.AGGRESSIVE.num));
-                           case ERROR -> System.err.println("received Error");
+                           case FRIENDLY:
+                               sendMessage(String.valueOf(Settings.RECEIVER.FRIENDLY.num));
+                               server.sendMessageToSelect(String.valueOf(Settings.RECEIVER.OTHER_PLAYER_FRIENDLY.num), opponent == -1 ? null: opponent);
+                               break;
+                           case AGGRESSIVE:
+                               sendMessage(String.valueOf(Settings.RECEIVER.AGGRESSIVE.num));
+                               server.sendMessageToSelect(String.valueOf(Settings.RECEIVER.OTHER_PLAYER_AGGRESSIVE.num), opponent == -1 ? null: opponent);
+                               break;
+                           case ERROR:
+                               System.err.println("received Error");
+                               break;
                        }
                     }catch (NumberFormatException e) {
                         System.err.println("Not a Number " + msg);
