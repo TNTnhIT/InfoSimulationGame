@@ -3,6 +3,7 @@ package server;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -45,15 +46,16 @@ public class Game implements GameSettings{
         });
     }
     private String printPoints(List<Integer> points, boolean evenNumberofPlayers) { //TODO eventuell Liste kopieren, damit nicht zwischendurch geändert werden kann
+        ArrayList<Integer> list = new ArrayList<>(points);
         String s = "Points: \n";
-        for(int i = 0; i < points.size(); i++) {
+        for(int i = 0; i < list.size(); i++) {
             if(evenNumberofPlayers) {
-                s += "Player " + i + ": " + points.get(i) + "\n";
+                s += "Player " + i + ": " + list.get(i) + "\n";
             }else {
-                if(i != points.size()-1) {
+                if(i != list.size()-1) {
 
                 }else {
-                    s += "Player " + i + ": " + points.get(i) + "\n";
+                    s += "Player " + i + ": " + list.get(i) + "\n";
                 }
             }
         }
@@ -146,12 +148,15 @@ public class Game implements GameSettings{
         private List<Settings.SENDER> messagesPlayer1;
         private List<Settings.SENDER> messagesPlayer2;
 
+        private boolean isGameRunning;
+
 
         public SmallGame(ClientHandler player1, int player1Int, ClientHandler player2, int player2Int) {
             this.player1Int = player1Int;
             this.player2Int = player2Int;
             this.player1 = player1;
             this.player2 = player2;
+            isGameRunning = false;
         }
 
         @Override
@@ -222,9 +227,10 @@ public class Game implements GameSettings{
             server.setOpponent(player1Int, player2Int);
             player1.setSmallGame(this, 0);
             player2.setSmallGame(this, 1);
-            sendMessage(2, Settings.RECEIVER.GAME_START);
+            isGameRunning = true;
             messagesPlayer1 = new CopyOnWriteArrayList<>();
             messagesPlayer2 = new CopyOnWriteArrayList<>();
+            sendMessage(2, Settings.RECEIVER.GAME_START);
         }
 
 

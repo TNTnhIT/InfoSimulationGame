@@ -37,17 +37,38 @@ public class Client implements Settings{
         int codeInt = Integer.parseInt(message);
         RECEIVER code = RECEIVER.valueOf(codeInt);
         switch (code) {
-            case FRIENDLY -> receivedMyselfFriendly();
-            case AGGRESSIVE -> receivedMyselfAggressive();
-            case OTHER_PLAYER_FRIENDLY -> receivedOtherFriendly();
-            case OTHER_PLAYER_AGGRESSIVE -> receivedOtherAggressive();
-            case GAME_START -> receivedGameStart();
-            case GAME_END -> receivedGameEnd();
-            case NEXT_ROUND -> receivedNextRound();
-            case WRONG_MESSAGE -> receivedWrongMessage();
-            case TO_FAST -> receivedToFast();
-            case OTHER_ERROR -> receivedOtherError();
-            default -> receivedOtherError();
+            case FRIENDLY:
+                receivedMyselfFriendly();
+                break;
+            case AGGRESSIVE:
+                receivedMyselfAggressive();
+                break;
+            case OTHER_PLAYER_FRIENDLY:
+                receivedOtherFriendly();
+                break;
+            case OTHER_PLAYER_AGGRESSIVE:
+                receivedOtherAggressive();
+                break;
+            case GAME_START:
+                receivedGameStart();
+                break;
+            case GAME_END:
+                receivedGameEnd();
+                break;
+            case NEXT_ROUND:
+                receivedNextRound();
+                break;
+            case WRONG_MESSAGE:
+                receivedWrongMessage();
+                break;
+            case TO_FAST:
+                receivedToFast();
+                break;
+            case OTHER_ERROR:
+                receivedOtherError();
+                break;
+            default:
+                receivedOtherError();
         }
 
     }

@@ -31,6 +31,8 @@ public class TestClientForm extends Client{
     private boolean myself;
     private boolean other;
 
+    private int round;
+
     private enum Modes{
         MANUEL, FRIENDLY, AGGRESSIVE, ALTERNATE, RANDOM
     }
@@ -134,6 +136,7 @@ public class TestClientForm extends Client{
         txtOther.setText("Friendly");
         other = true;
 
+
     }
 
     @Override
@@ -141,6 +144,8 @@ public class TestClientForm extends Client{
         super.receivedOtherAggressive();
         txtOther.setText("Aggressive");
         other = false;
+
+
     }
 
     @Override
@@ -206,6 +211,7 @@ public class TestClientForm extends Client{
         myself = true;
         other = true;
         lblGameEnd.setVisible(false);
+        mode = Modes.MANUEL;
         switch(mode) {
             case MANUEL -> {}
             case FRIENDLY -> sendFriendly();
@@ -224,6 +230,11 @@ public class TestClientForm extends Client{
                     sendAggressive();
             }
         }
+        round = 0;
+
+    }
+
+    private void makeMove() {
 
     }
 
@@ -233,6 +244,23 @@ public class TestClientForm extends Client{
         lblGameEnd.setVisible(true);
         //mode = Modes.MANUEL;
         //rdbManuel.setSelected(true);
+
+        if(myself && other) {
+            pointsMyself += 3;
+            pointsOther += 3;
+        }else if(!myself && !other) {
+            pointsMyself += 1;
+            pointsOther += 1;
+        }else if(!myself && other) {
+            pointsMyself += 5;
+            pointsOther += 0;
+        }else if(myself && !other) {
+            pointsMyself += 0;
+            pointsOther += 5;
+        }
+        txtPointsMe.setText(String.valueOf(pointsMyself));
+        txtPointsOther.setText(String.valueOf(pointsOther));
+
 
     }
 
