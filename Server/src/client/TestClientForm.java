@@ -212,6 +212,7 @@ public class TestClientForm extends Client{
         other = true;
         lblGameEnd.setVisible(false);
         mode = Modes.MANUEL;
+        rdbManuel.setSelected(true);
         switch(mode) {
             case MANUEL -> {}
             case FRIENDLY -> sendFriendly();

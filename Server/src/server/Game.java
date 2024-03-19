@@ -171,50 +171,51 @@ public class Game implements GameSettings{
 
             for(int i = 0; i < NUMBER_OF_MOVES; i++) {
 
+                if(isGameRunning) {
+                    //waiting for messages
+                    while(messagesPlayer1.isEmpty() || messagesPlayer2.isEmpty()) {
 
-                //waiting for messages
-                while(messagesPlayer1.isEmpty() || messagesPlayer2.isEmpty()) {
+                    }
+                    //TODO boolean to stop new messages
+                    SENDER movePlayer1 = messagesPlayer1.getFirst();
+                    messagesPlayer1.removeFirst();
+                    SENDER movePlayer2 = messagesPlayer2.getFirst();
+                    messagesPlayer2.removeFirst();
 
-                }
-                //TODO boolean to stop new messages
-                SENDER movePlayer1 = messagesPlayer1.getFirst();
-                messagesPlayer1.removeFirst();
-                SENDER movePlayer2 = messagesPlayer2.getFirst();
-                messagesPlayer2.removeFirst();
+                    //Eigentliche Logic des Programms
+                    if(movePlayer1 == SENDER.FRIENDLY && movePlayer2 == SENDER.FRIENDLY) {
+                        pointsPlayer1 += BOTH_FRIENDLY;
+                        pointsPlayer2 += BOTH_FRIENDLY;
+                    } else if(movePlayer1 == SENDER.AGGRESSIVE && movePlayer2 == SENDER.AGGRESSIVE) {
+                        pointsPlayer1 += BOTH_AGGRESSIVE;
+                        pointsPlayer2 += BOTH_AGGRESSIVE;
+                    } else if(movePlayer1 == SENDER.AGGRESSIVE && movePlayer2 == SENDER.FRIENDLY) {
+                        pointsPlayer1 += DIFFERENT_AGGRESSIVE;
+                        pointsPlayer2 += DIFFERENT_FRIENDLY;
+                    } else if(movePlayer1 == SENDER.FRIENDLY && movePlayer2 == SENDER.AGGRESSIVE) {
+                        pointsPlayer1 += DIFFERENT_FRIENDLY;
+                        pointsPlayer2 += DIFFERENT_AGGRESSIVE;
+                    }
 
-                //Eigentliche Logic des Programms
-                if(movePlayer1 == SENDER.FRIENDLY && movePlayer2 == SENDER.FRIENDLY) {
-                    pointsPlayer1 += BOTH_FRIENDLY;
-                    pointsPlayer2 += BOTH_FRIENDLY;
-                } else if(movePlayer1 == SENDER.AGGRESSIVE && movePlayer2 == SENDER.AGGRESSIVE) {
-                    pointsPlayer1 += BOTH_AGGRESSIVE;
-                    pointsPlayer2 += BOTH_AGGRESSIVE;
-                } else if(movePlayer1 == SENDER.AGGRESSIVE && movePlayer2 == SENDER.FRIENDLY) {
-                    pointsPlayer1 += DIFFERENT_AGGRESSIVE;
-                    pointsPlayer2 += DIFFERENT_FRIENDLY;
-                } else if(movePlayer1 == SENDER.FRIENDLY && movePlayer2 == SENDER.AGGRESSIVE) {
-                    pointsPlayer1 += DIFFERENT_FRIENDLY;
-                    pointsPlayer2 += DIFFERENT_AGGRESSIVE;
-                }
+                    //Send response
+                    switch(movePlayer1) {
+                        case FRIENDLY -> sendMessage(1, RECEIVER.OTHER_PLAYER_FRIENDLY);
+                        case AGGRESSIVE -> sendMessage(1, RECEIVER.OTHER_PLAYER_AGGRESSIVE);
+                    }
+                    switch(movePlayer2) {
+                        case FRIENDLY -> sendMessage(0, RECEIVER.OTHER_PLAYER_FRIENDLY);
+                        case AGGRESSIVE -> sendMessage(0, RECEIVER.OTHER_PLAYER_AGGRESSIVE);
+                    }
 
-                //Send response
-                switch(movePlayer1) {
-                    case FRIENDLY -> sendMessage(1, RECEIVER.OTHER_PLAYER_FRIENDLY);
-                    case AGGRESSIVE -> sendMessage(1, RECEIVER.OTHER_PLAYER_AGGRESSIVE);
-                }
-                switch(movePlayer2) {
-                    case FRIENDLY -> sendMessage(0, RECEIVER.OTHER_PLAYER_FRIENDLY);
-                    case AGGRESSIVE -> sendMessage(0, RECEIVER.OTHER_PLAYER_AGGRESSIVE);
-                }
-
-                if(i != NUMBER_OF_MOVES -1) { //nach der letzten Runde gibt es keine weitere
-                    sendMessage(2, Settings.RECEIVER.NEXT_ROUND);
+                    if(i != NUMBER_OF_MOVES -1) { //nach der letzten Runde gibt es keine weitere
+                        sendMessage(2, Settings.RECEIVER.NEXT_ROUND);
+                    }
                 }
             }
 
-            sendMessage(2, RECEIVER.GAME_END);
             synchronized (this) { //just to be safe
-
+                isGameRunning = false;
+                sendMessage(2, RECEIVER.GAME_END);
                 points.set(player1Int, pointsPlayer1+points.get(player1Int));
                 points.set(player2Int, pointsPlayer2+points.get(player2Int));
                 finished += 1;

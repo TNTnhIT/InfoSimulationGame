@@ -31,8 +31,8 @@ public class Client implements Settings{
 
     //Message Handling
     private void gotMessage() {
-        String message = messages.getFirst();
-        messages.removeFirst();
+        String message = messages.get(0);
+        messages.remove(0);
         System.out.println("Got Message: " + message); //TODO
         int codeInt = Integer.parseInt(message);
         RECEIVER code = RECEIVER.valueOf(codeInt);
