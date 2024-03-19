@@ -37,13 +37,23 @@ public class Client implements Settings{
         int codeInt = Integer.parseInt(message);
         RECEIVER code = RECEIVER.valueOf(codeInt);
         switch (code) {
-            case FRIENDLY -> gotMyselfFriendly();
-            case AGGRESSIVE -> gotMyselfAggressive();
-            case OTHER_PLAYER_FRIENDLY -> gotOtherFriendly();
-            case OTHER_PLAYER_AGGRESSIVE -> gotOtherAggressive();
+            case FRIENDLY -> receivedMyselfFriendly();
+            case AGGRESSIVE -> receivedMyselfAggressive();
+            case OTHER_PLAYER_FRIENDLY -> receivedOtherFriendly();
+            case OTHER_PLAYER_AGGRESSIVE -> receivedOtherAggressive();
+            case GAME_START -> receivedGameStart();
+            case GAME_END -> receivedGameEnd();
+            case NEXT_ROUND -> receivedNextRound();
+            case WRONG_MESSAGE -> receivedWrongMessage();
+            case TO_FAST -> receivedToFast();
+            case OTHER_ERROR -> receivedOtherError();
+            default -> receivedOtherError();
         }
 
     }
+
+
+
 
     private void sendCode(Settings.SENDER sender) {
         sendIntCode(sender.num);
@@ -57,7 +67,50 @@ public class Client implements Settings{
         serverHandler.sendMessage(message);
     }
 
+    //Receiver
 
+    public void receivedOtherFriendly() {
+        System.out.println("Other: Friendly");
+    }
+
+    public void receivedOtherAggressive() {
+        System.out.println("Other: Aggressive");
+    }
+
+    public void receivedMyselfFriendly() {
+        System.out.println("Me: Friendly");
+    }
+
+    public void receivedMyselfAggressive() {
+        System.out.println("Me: Aggressive");
+    }
+
+    public void receivedGameStart() {
+        System.out.println("Game has started");
+    }
+
+    public void receivedGameEnd() {
+        System.out.println("Game has ended");
+    }
+
+    public void receivedNextRound() {
+        System.out.println("Next Round");
+    }
+
+    public void receivedWrongMessage() {
+        System.err.println("Error: Wrong Message");
+    }
+
+    public void receivedToFast() {
+        System.err.println("Error: To fast");
+    }
+
+    public void receivedOtherError() {
+        System.err.println("Error: Other error");
+    }
+
+
+    //Sender
     public void sendFriendly() {
         sendCode(SENDER.FRIENDLY);
     }
@@ -65,26 +118,6 @@ public class Client implements Settings{
     public void sendAggressive() {
         sendCode(SENDER.AGGRESSIVE);
     }
-
-    public void gotOtherFriendly() {
-        System.out.println("Other: Friendly");
-    }
-
-    public void gotOtherAggressive() {
-        System.out.println("Other: Aggressive");
-    }
-
-    public void gotMyselfFriendly() {
-        System.out.println("Me: Friendly");
-    }
-
-    public void gotMyselfAggressive() {
-        System.out.println("Me: Aggressive");
-    }
-
-
-
-
 
 
     private class ServerHandler extends Thread{

@@ -3,6 +3,7 @@ package client;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Random;
 
 public class TestClientForm extends Client{
     private JPanel mainPnl;
@@ -12,19 +13,98 @@ public class TestClientForm extends Client{
     private JTextField txtOther;
     private JLabel lblOther;
     private JLabel lblMyself;
+    private JTextField txtPointsMe;
+    private JTextField txtPointsOther;
+    private JLabel lblPointsMe;
+    private JLabel lblPointsOther;
+    private JRadioButton rdbFriendly;
+    private JRadioButton rdbAggressive;
+    private JRadioButton rdbAlternate;
+    private JRadioButton rdbRandom;
+    private JRadioButton rdbManuel;
+    private JLabel lblGameEnd;
+
+    ///////////
+    private int pointsMyself;
+    private int pointsOther;
+
+    private boolean myself;
+    private boolean other;
+
+    private enum Modes{
+        MANUEL, FRIENDLY, AGGRESSIVE, ALTERNATE, RANDOM
+    }
+    private Modes mode;
+    private boolean alternate;
+
+    private boolean nextMove;
+    Random rand;
 
     public TestClientForm() { //TODO Test
         this("127.0.0.1", 8080);
+        mode = Modes.MANUEL;
+        rand = new Random();
+        alternate = rand.nextBoolean();
+        lblGameEnd.setVisible(false);
         sendFriendlyButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                sendFriendly();
+                if(mode == Modes.MANUEL) {
+                    nextMove = true;
+                    sendFriendly();
+                }
+
             }
         });
         sendAggressiveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(mode == Modes.MANUEL) {
+                    nextMove = false;
+                    sendAggressive();
+                }
+
+            }
+        });
+        rdbManuel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mode = Modes.MANUEL;
+            }
+        });
+        rdbFriendly.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mode = Modes.FRIENDLY;
+                sendFriendly();
+            }
+        });
+        rdbAggressive.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mode = Modes.AGGRESSIVE;
                 sendAggressive();
+            }
+        });
+        rdbAlternate.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mode = Modes.ALTERNATE;
+                if(alternate)
+                    sendFriendly();
+                else
+                    sendAggressive();
+                alternate = !alternate;
+            }
+        });
+        rdbRandom.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mode = Modes.RANDOM;
+                if(rand.nextBoolean())
+                    sendFriendly();
+                else
+                    sendAggressive();
             }
         });
     }
@@ -35,28 +115,131 @@ public class TestClientForm extends Client{
     }
 
     @Override
-    public void gotMyselfFriendly() {
-        super.gotMyselfFriendly();
+    public void receivedMyselfFriendly() {
+        super.receivedMyselfFriendly();
         txtMyself.setText("Friendly");
+        myself = true;
     }
 
     @Override
-    public void gotMyselfAggressive() {
-        super.gotMyselfAggressive();
+    public void receivedMyselfAggressive() {
+        super.receivedMyselfAggressive();
         txtMyself.setText("Aggressive");
+        myself = false;
     }
 
     @Override
-    public void gotOtherFriendly() {
-        super.gotOtherFriendly();
+    public void receivedOtherFriendly() {
+        super.receivedOtherFriendly();
         txtOther.setText("Friendly");
+        other = true;
 
     }
 
     @Override
-    public void gotOtherAggressive() {
-        super.gotOtherAggressive();
+    public void receivedOtherAggressive() {
+        super.receivedOtherAggressive();
         txtOther.setText("Aggressive");
+        other = false;
+    }
+
+    @Override
+    public void receivedNextRound() {
+        super.receivedNextRound();
+        txtMyself.setText("");
+
+        if(myself && other) {
+            pointsMyself += 3;
+            pointsOther += 3;
+        }else if(!myself && !other) {
+            pointsMyself += 1;
+            pointsOther += 1;
+        }else if(!myself && other) {
+            pointsMyself += 5;
+            pointsOther += 0;
+        }else if(myself && !other) {
+            pointsMyself += 0;
+            pointsOther += 5;
+        }
+        txtPointsMe.setText(String.valueOf(pointsMyself));
+        txtPointsOther.setText(String.valueOf(pointsOther));
+
+        switch(mode) {
+            case MANUEL -> {}
+            case FRIENDLY -> {
+                nextMove = true;
+                sendFriendly();
+            }
+            case AGGRESSIVE -> {
+                nextMove = false;
+                sendAggressive();
+            }
+            case ALTERNATE -> {
+                nextMove = alternate;
+                if(alternate)
+                    sendFriendly();
+                else
+                    sendAggressive();
+                alternate = !alternate;
+            }
+            case RANDOM -> {
+                nextMove = rand.nextBoolean();
+                if (nextMove)
+                    sendFriendly();
+                else
+                    sendAggressive();
+            }
+        }
+
+        //txtOther.setText("");
+    }
+
+    @Override
+    public void receivedGameStart() {
+        super.receivedGameStart();
+        txtMyself.setText("");
+        txtOther.setText("");
+        txtPointsMe.setText("");
+        txtPointsOther.setText("");
+        pointsMyself = 0;
+        pointsOther = 0;
+        myself = true;
+        other = true;
+        lblGameEnd.setVisible(false);
+        switch(mode) {
+            case MANUEL -> {}
+            case FRIENDLY -> sendFriendly();
+            case AGGRESSIVE -> sendAggressive();
+            case ALTERNATE -> {
+                if(alternate)
+                    sendFriendly();
+                else
+                    sendAggressive();
+                alternate = !alternate;
+            }
+            case RANDOM -> {
+                if (rand.nextBoolean())
+                    sendFriendly();
+                else
+                    sendAggressive();
+            }
+        }
+
+    }
+
+    @Override
+    public void receivedGameEnd() {
+        super.receivedGameEnd();
+        lblGameEnd.setVisible(true);
+        //mode = Modes.MANUEL;
+        //rdbManuel.setSelected(true);
+
+    }
+
+    @Override
+    public void receivedToFast() {
+        super.receivedToFast();
+
     }
 
     public static void start() {

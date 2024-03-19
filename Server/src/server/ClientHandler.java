@@ -61,9 +61,17 @@ public class ClientHandler implements Runnable{
                     System.out.println("Message received:" + msg);
                     try {
 
-                       int codeInt = Integer.parseInt(msg);
-                       Settings.SENDER sender = Settings.SENDER.valueOf(codeInt);
-                       switch (sender) {
+                       //int codeInt = Integer.parseInt(msg);
+                       //Settings.SENDER sender = Settings.SENDER.valueOf(codeInt);
+                        if(game != null) {
+                            game.receiveMessage(player, msg);
+                        }else {
+                            sendMessage(String.valueOf(Settings.RECEIVER.OTHER_ERROR.num));
+                        }
+
+
+
+                      /* switch (sender) {
                            case FRIENDLY:
                                sendMessage(String.valueOf(Settings.RECEIVER.FRIENDLY.num));
                                server.sendMessageToSelect(String.valueOf(Settings.RECEIVER.OTHER_PLAYER_FRIENDLY.num), opponent == -1 ? null: opponent);
@@ -75,7 +83,7 @@ public class ClientHandler implements Runnable{
                            case ERROR:
                                System.err.println("received Error");
                                break;
-                       }
+                       }*/
                     }catch (NumberFormatException e) {
                         System.err.println("Not a Number " + msg);
                     }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import client.TestClientForm;
 import settings.Settings;
 
 public class Game implements GameSettings{
@@ -15,55 +16,121 @@ public class Game implements GameSettings{
 
     private JPanel GamePnl;
     private JButton btnStart;
+    private JTextArea txaPoints;
+
+    private List<Integer> points;
+
+    private volatile int finished;
 
     public Game() {
         this.server = new Server(8080);
+        TestClientForm.start();
+        TestClientForm.start();
+        TestClientForm.start();
+        TestClientForm.start();
+
+        //startGame(0,1);
+        txaPoints.setText("Points: ");
+        points = new CopyOnWriteArrayList<>();
+
+        //start();
+
         btnStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 start();
-
+                //startGame(0, 1);
 
             }
         });
     }
+    private String printPoints(List<Integer> points, boolean evenNumberofPlayers) { //TODO eventuell Liste kopieren, damit nicht zwischendurch geändert werden kann
+        String s = "Points: \n";
+        for(int i = 0; i < points.size(); i++) {
+            if(evenNumberofPlayers) {
+                s += "Player " + i + ": " + points.get(i) + "\n";
+            }else {
+                if(i != points.size()-1) {
+
+                }else {
+                    s += "Player " + i + ": " + points.get(i) + "\n";
+                }
+            }
+        }
+        return s;
+    }
 
     private void start() {
-        int players = server.startFullGame();
-        boolean evenNumberOfPlayers = players % 2 == 0;
+        new Thread(){
+            @Override
+            public void run() {
+                int players = server.startFullGame();
+                boolean evenNumberOfPlayers = players % 2 == 0;
 
-        int anz = players;
-        Stack<Integer> stack = new Stack<>();
-        if(!evenNumberOfPlayers) {
-            anz++;
-        }
+                int anz = players;
+                Stack<Integer> stack = new Stack<>();
+                if(!evenNumberOfPlayers) {
+                    anz++;
+                }
+                points = new CopyOnWriteArrayList<>();
+                for(int i = 0; i < anz; i++) {
+                    points.add(0);
+                }
+                txaPoints.setText(printPoints(points, evenNumberOfPlayers));
+
+                for(int i = anz-1; i > 0; i--) {
+                    if(evenNumberOfPlayers)
+                        finished = 0;
+                    else
+                        finished = 1;
 
 
-        for(int i = anz-1; i > 0; i--) {
-            stack.push(0);
-            for(int j = 0; j < (anz/2)-1; j++) {
-                stack.push(((i+j)%(anz-1))+1);
+                    stack.push(0);
+                    for(int j = 0; j < (anz/2)-1; j++) {
+                        stack.push(((i+j)%(anz-1))+1);
+                    }
+                    for(int j = (anz/2)-1; j < anz-1; j++) {
+                        //Start Game
+                        int player1 = stack.pop();
+                        int player2 = (((i+j)%(anz-1))+1);
+                        System.out.println(player1 + " | " + player2);
+                        if(evenNumberOfPlayers) {
+                            startGame(player1, player2);
+                        }else {//bei ungerader Anzahl muss einer aussetzen
+                            if(player1 == anz-1 || player2 == anz-1) {
+
+                            }else {
+                                startGame(player1, player2);
+                            }
+                        }
+
+                    }
+                    System.out.println("-------------------");
+
+                    while(finished < anz/2) { //Waiting for all games to finish
+                    }
+
+
+                    System.out.println("Hi" + finished);
+                    for(int x :points) {
+                        System.out.print(x + "|");
+                    }
+                    System.out.println();
+                    printPoints(points, evenNumberOfPlayers);
+
+
+
+                }
             }
-            for(int j = (anz/2)-1; j < anz-1; j++) {
-                //Start Game
-                int player1 = stack.pop();
-                int player2 = (((i+j)%(anz-1))+1);
-                System.out.println(player1 + " | " + player2);
-                startGame(player1, player2);
-            }
-            System.out.println("-------------------");
-        }
-
-
-
-
+        }.start();
     }
 
     public void startGame(int player1, int player2) {
-        new SmallGame(server.clients.get(player1), player1, server.clients.get(player2), player2);
+        System.out.println("Started Game between Player " + player1 + " and Player " + player2);
+        new SmallGame(server.clients.get(player1), player1, server.clients.get(player2), player2).start();
     }
 
-    public class SmallGame extends Thread{
+    public class SmallGame extends Thread implements Settings{
         ClientHandler player1;
         ClientHandler player2;
 
@@ -98,34 +165,55 @@ public class Game implements GameSettings{
             isPlayer2Friendly = true;
 
             for(int i = 0; i < NUMBER_OF_MOVES; i++) {
-                sendMessage(2, Settings.RECEIVER.NEXT_ROUND);
+
 
                 //waiting for messages
                 while(messagesPlayer1.isEmpty() || messagesPlayer2.isEmpty()) {
 
                 }
+                //TODO boolean to stop new messages
+                SENDER movePlayer1 = messagesPlayer1.getFirst();
+                messagesPlayer1.removeFirst();
+                SENDER movePlayer2 = messagesPlayer2.getFirst();
+                messagesPlayer2.removeFirst();
 
-
-
-
-
-                if(isPlayer1Friendly && isPlayer2Friendly) {
-                    pointsPlayer1 += 3;
-                    pointsPlayer2 += 3;
-                } else if(!isPlayer1Friendly && !isPlayer2Friendly) {
-                    pointsPlayer1 += 1;
-                    pointsPlayer2 += 1;
-                } else if(!isPlayer1Friendly && isPlayer2Friendly) {
-                    pointsPlayer1 += 5;
-                    //player 2 += 0
-                } else if(isPlayer1Friendly && !isPlayer2Friendly) {
-                    //player 1 += 0
-                    pointsPlayer2 += 5;
+                //Eigentliche Logic des Programms
+                if(movePlayer1 == SENDER.FRIENDLY && movePlayer2 == SENDER.FRIENDLY) {
+                    pointsPlayer1 += BOTH_FRIENDLY;
+                    pointsPlayer2 += BOTH_FRIENDLY;
+                } else if(movePlayer1 == SENDER.AGGRESSIVE && movePlayer2 == SENDER.AGGRESSIVE) {
+                    pointsPlayer1 += BOTH_AGGRESSIVE;
+                    pointsPlayer2 += BOTH_AGGRESSIVE;
+                } else if(movePlayer1 == SENDER.AGGRESSIVE && movePlayer2 == SENDER.FRIENDLY) {
+                    pointsPlayer1 += DIFFERENT_AGGRESSIVE;
+                    pointsPlayer2 += DIFFERENT_FRIENDLY;
+                } else if(movePlayer1 == SENDER.FRIENDLY && movePlayer2 == SENDER.AGGRESSIVE) {
+                    pointsPlayer1 += DIFFERENT_FRIENDLY;
+                    pointsPlayer2 += DIFFERENT_AGGRESSIVE;
                 }
 
+                //Send response
+                switch(movePlayer1) {
+                    case FRIENDLY -> sendMessage(1, RECEIVER.OTHER_PLAYER_FRIENDLY);
+                    case AGGRESSIVE -> sendMessage(1, RECEIVER.OTHER_PLAYER_AGGRESSIVE);
+                }
+                switch(movePlayer2) {
+                    case FRIENDLY -> sendMessage(0, RECEIVER.OTHER_PLAYER_FRIENDLY);
+                    case AGGRESSIVE -> sendMessage(0, RECEIVER.OTHER_PLAYER_AGGRESSIVE);
+                }
+
+                if(i != NUMBER_OF_MOVES -1) { //nach der letzten Runde gibt es keine weitere
+                    sendMessage(2, Settings.RECEIVER.NEXT_ROUND);
+                }
             }
 
+            sendMessage(2, RECEIVER.GAME_END);
+            synchronized (this) { //just to be safe
 
+                points.set(player1Int, pointsPlayer1+points.get(player1Int));
+                points.set(player2Int, pointsPlayer2+points.get(player2Int));
+                finished += 1;
+            }
         }
 
         private void initializeGame() {
@@ -142,9 +230,9 @@ public class Game implements GameSettings{
 
         private void sendMessage(int player, Settings.RECEIVER message) {
             if(player == 0) {
-                player2.sendMessage(String.valueOf(message.num));
-            }else if(player == 1){
                 player1.sendMessage(String.valueOf(message.num));
+            }else if(player == 1){
+                player2.sendMessage(String.valueOf(message.num));
             }else {
                 player1.sendMessage(String.valueOf(message.num));
                 player2.sendMessage(String.valueOf(message.num));
@@ -156,6 +244,11 @@ public class Game implements GameSettings{
             if(player == 0) {
                 if(messagesPlayer1.isEmpty()) {
                     messagesPlayer1.add(decodedMessage);
+                    //Feedback loop
+                    switch(decodedMessage) {
+                        case FRIENDLY -> sendMessage(0, RECEIVER.FRIENDLY);
+                        case AGGRESSIVE -> sendMessage(0, RECEIVER.AGGRESSIVE);
+                    }
                 }else if(decodedMessage == Settings.SENDER.ERROR){
                     //TODO
                 }else {
@@ -164,6 +257,10 @@ public class Game implements GameSettings{
             }else if(player == 1) {
                 if(messagesPlayer2.isEmpty()) {
                     messagesPlayer2.add(decodedMessage);
+                    switch(decodedMessage) {
+                        case FRIENDLY -> sendMessage(1, RECEIVER.FRIENDLY);
+                        case AGGRESSIVE -> sendMessage(1, RECEIVER.AGGRESSIVE);
+                    }
                 }else if(decodedMessage == Settings.SENDER.ERROR) {
 
                 }else {
