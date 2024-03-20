@@ -18,11 +18,13 @@ public class Game implements GameSettings{
     private JPanel GamePnl;
     private JButton btnStart;
     private JTextArea txaPoints;
+    private JButton btnRedrawPoints;
 
     private List<Integer> points;
 
     private volatile int finished;
 
+    private boolean even;
     public Game() {
         this.server = new Server(8080);
         TestClientForm.start();
@@ -44,8 +46,20 @@ public class Game implements GameSettings{
 
             }
         });
+        btnRedrawPoints.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                refreshPoints();
+            }
+        });
+    }
+
+    public synchronized void refreshPoints() {
+        txaPoints.setText(printPoints(points, even));
+        txaPoints.repaint();
     }
     private String printPoints(List<Integer> points, boolean evenNumberofPlayers) { //TODO eventuell Liste kopieren, damit nicht zwischendurch geändert werden kann
+        System.out.println("Refreshing points");
         ArrayList<Integer> list = new ArrayList<>(points);
         String s = "Points: \n";
         for(int i = 0; i < list.size(); i++) {
@@ -68,6 +82,7 @@ public class Game implements GameSettings{
             public void run() {
                 int players = server.startFullGame();
                 boolean evenNumberOfPlayers = players % 2 == 0;
+                even = evenNumberOfPlayers;
 
                 int anz = players;
                 Stack<Integer> stack = new Stack<>();
@@ -78,7 +93,7 @@ public class Game implements GameSettings{
                 for(int i = 0; i < anz; i++) {
                     points.add(0);
                 }
-                txaPoints.setText(printPoints(points, evenNumberOfPlayers));
+                refreshPoints();
 
                 for(int i = anz-1; i > 0; i--) {
                     if(evenNumberOfPlayers)
@@ -103,6 +118,7 @@ public class Game implements GameSettings{
 
                             }else {
                                 startGame(player1, player2);
+                                //refreshPoints();
                             }
                         }
 
@@ -118,7 +134,7 @@ public class Game implements GameSettings{
                         System.out.print(x + "|");
                     }
                     System.out.println();
-                    printPoints(points, evenNumberOfPlayers);
+                    refreshPoints();
 
 
 
@@ -129,7 +145,7 @@ public class Game implements GameSettings{
 
     public void startGame(int player1, int player2) {
         System.out.println("Started Game between Player " + player1 + " and Player " + player2);
-        new SmallGame(server.clients.get(player1), player1, server.clients.get(player2), player2).start();
+        new SmallGame(server.clients.get(player1), player1, server.clients.get(player2), player2).startGame();
     }
 
     public class SmallGame extends Thread implements Settings{
@@ -161,6 +177,11 @@ public class Game implements GameSettings{
 
         @Override
         public void run() {
+            initializeGame();
+            startGameLoop();
+        }
+
+        public void startGame() {
             initializeGame();
             startGameLoop();
         }
