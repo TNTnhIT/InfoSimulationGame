@@ -25,13 +25,17 @@ public class Game implements GameSettings{
     private volatile int finished;
 
     private boolean even;
+
+    private List<String> names;
+
+
+
     public Game() {
         this.server = new Server(8080);
-        TestClientForm.start();
-        TestClientForm.start();
-        TestClientForm.start();
-        TestClientForm.start();
+        for (int i = 0; i < 5; i++) {
+            TestClientForm.start();
 
+        }
         //startGame(0,1);
         txaPoints.setText("Points: ");
         points = new CopyOnWriteArrayList<>();
@@ -67,8 +71,6 @@ public class Game implements GameSettings{
                 s += "Player " + i + ": " + list.get(i) + "\n";
             }else {
                 if(i != list.size()-1) {
-
-                }else {
                     s += "Player " + i + ": " + list.get(i) + "\n";
                 }
             }
@@ -141,6 +143,7 @@ public class Game implements GameSettings{
                 }
             }
         }.start();
+        refreshPoints();
     }
 
     public void startGame(int player1, int player2) {
@@ -227,6 +230,15 @@ public class Game implements GameSettings{
                         case FRIENDLY -> sendMessage(0, RECEIVER.OTHER_PLAYER_FRIENDLY);
                         case AGGRESSIVE -> sendMessage(0, RECEIVER.OTHER_PLAYER_AGGRESSIVE);
                     }
+
+                    //TODO waiting so that we done get any to fast issues
+                    try {
+                        Thread.sleep(1,10);
+                    } catch (InterruptedException e) {
+                        System.err.println("Interrupted");
+                        throw new RuntimeException(e);
+                    }
+
 
                     if(i != NUMBER_OF_MOVES -1) { //nach der letzten Runde gibt es keine weitere
                         sendMessage(2, Settings.RECEIVER.NEXT_ROUND);

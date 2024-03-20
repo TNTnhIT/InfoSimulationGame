@@ -44,7 +44,8 @@ public class TestClientForm extends Client{
 
     public TestClientForm() { //TODO Test
         this("127.0.0.1", 8080);
-        mode = Modes.MANUEL;
+        mode = Modes.RANDOM; //Sets the start mode
+        rdbRandom.setSelected(true);
         rand = new Random();
         alternate = rand.nextBoolean();
         lblGameEnd.setVisible(false);
