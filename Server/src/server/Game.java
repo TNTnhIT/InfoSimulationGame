@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import client.TestClientForm;
 import settings.Settings;
 
 public class Game implements GameSettings{
@@ -19,6 +18,11 @@ public class Game implements GameSettings{
     private JButton btnStart;
     private JTextArea txaPoints;
     private JButton btnRedrawPoints;
+    private JTextArea txaPlayers;
+    private JList lstPlayers;
+    private JTextField txtPlayerName;
+    private JButton btnSubmitPlayerName;
+    private JButton btnJoins;
 
     private List<Integer> points;
 
@@ -28,14 +32,15 @@ public class Game implements GameSettings{
 
     private List<String> names;
 
+    private final int DELAY_MIL = 1;
+    private final int DELAY_NAN = 10;
 
 
     public Game() {
-        this.server = new Server(8080);
-        for (int i = 0; i < 5; i++) {
-            TestClientForm.start();
-
-        }
+        this.server = new Server(8080, this);
+       // for (int i = 0; i < 5; i++) {
+       //     TestClientForm.start();
+       // }
         //startGame(0,1);
         txaPoints.setText("Points: ");
         points = new CopyOnWriteArrayList<>();
@@ -45,6 +50,7 @@ public class Game implements GameSettings{
         btnStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //server.startFullGame();
                 start();
                 //startGame(0, 1);
 
@@ -56,7 +62,13 @@ public class Game implements GameSettings{
                 refreshPoints();
             }
         });
+
     }
+
+    public void newPlayer() {
+
+    }
+
 
     public synchronized void refreshPoints() {
         txaPoints.setText(printPoints(points, even));
@@ -131,7 +143,7 @@ public class Game implements GameSettings{
                     }
 
 
-                    System.out.println("Hi" + finished);
+                    System.out.println("finished: " + finished);
                     for(int x :points) {
                         System.out.print(x + "|");
                     }
@@ -233,7 +245,7 @@ public class Game implements GameSettings{
 
                     //TODO waiting so that we done get any to fast issues
                     try {
-                        Thread.sleep(1,10);
+                        Thread.sleep(DELAY_MIL,DELAY_NAN);
                     } catch (InterruptedException e) {
                         System.err.println("Interrupted");
                         throw new RuntimeException(e);
@@ -258,7 +270,7 @@ public class Game implements GameSettings{
         private void initializeGame() {
             pointsPlayer1 = 0;
             pointsPlayer2 = 0;
-            server.setOpponent(player1Int, player2Int);
+            //server.setOpponent(player1Int, player2Int);
             player1.setSmallGame(this, 0);
             player2.setSmallGame(this, 1);
             isGameRunning = true;

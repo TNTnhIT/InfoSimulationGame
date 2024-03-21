@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Server implements Runnable{
+public class Server extends Thread{
     ServerSocket serverSocket;
     List<ClientHandler> clients;
     int port;
@@ -14,12 +14,17 @@ public class Server implements Runnable{
     boolean hasGameStarted;
 
 
-    public Server(int port) {
+    Game game;
+
+
+    public Server(int port, Game game) {
         //quasi Thread Save Variante von ArrayList
         clients = new CopyOnWriteArrayList<>();
         this.port = port;
         this.hasGameStarted = false;
-        new Thread(this).start();
+        //serverThread = new Thread(this);
+        //serverThread.start();
+        this.start();
     }
 
 
@@ -28,17 +33,25 @@ public class Server implements Runnable{
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("Started chat server on port " + port);
-            while(!hasGameStarted) {
-                if(clients.size() == 2) //TODO test code
-                    setOpponent(0,1);
-                System.out.println("Waiting for new client...");
-                Socket connectionToClient = serverSocket.accept();
-                if(!hasGameStarted) {
-                    ClientHandler client = new ClientHandler(this, connectionToClient);
-                    clients.add(client);
-                    System.out.println("Accepted new client:" + connectionToClient.getInetAddress());
+            while(true) {
+                while(!hasGameStarted) { //Before the game has started
+                    System.out.println("Waiting for new client...");
+                    Socket connectionToClient = serverSocket.accept();
+                    if(!hasGameStarted) {
+                        ClientHandler client = new ClientHandler(this, connectionToClient);
+                        clients.add(client);
+                        System.out.println("Accepted new client:" + connectionToClient.getInetAddress());
+                        game.newPlayer();
+                    }
                 }
+                System.out.println("Game is running");
+                while(hasGameStarted)  { //While the game is running (waiting
+
+                }
+                System.out.println("Game has ended");
             }
+
+
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -52,22 +65,23 @@ public class Server implements Runnable{
         }
     }
 
-    public void setOpponent(int player1, int player2) {
-        System.out.println("Opponent"); //TODO test code
-        clients.get(player1).setOpponent(player2);
-        clients.get(player2).setOpponent(player1);
-    }
+
 
 
 
     public int startFullGame() {
-           hasGameStarted = false;
+        System.out.println("game has started");
+           hasGameStarted = true;
            return clients.size();
     }
 
-    public boolean startGame() {
-        return false;
+    public void gameHasEnded() {
+        System.out.println("Hi");
+        hasGameStarted = false;
+        this.interrupt();
+        System.out.println(Thread.interrupted()); //TODO
     }
+
 
     public void broadcastMessage(String msg) {
         System.out.println("Message broadcast: " + msg);

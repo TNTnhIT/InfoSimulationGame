@@ -30,7 +30,7 @@ public class ClientHandler implements Runnable{
     }
 
     public void sendMessage(String msg) {
-        System.out.println("Hi");
+        //System.out.println("Hi");
         try {
             os.writeUTF(msg);
             os.flush();
@@ -58,7 +58,7 @@ public class ClientHandler implements Runnable{
             while(!connectionToClient.isClosed()) {
                 String msg = is.readUTF();
                 if(msg != null) {
-                    System.out.println("Message received:" + msg);
+                    //System.out.println("Message received:" + msg);
                     try {
 
                        //int codeInt = Integer.parseInt(msg);
@@ -92,7 +92,8 @@ public class ClientHandler implements Runnable{
 
 
         } catch (IOException e) {
-            e.printStackTrace();
+           // e.printStackTrace();
+            System.out.println("Client disconnected");
         }finally {
             server.removeClient(this);
             //server.broadcastMessage(name, " disconnected.");

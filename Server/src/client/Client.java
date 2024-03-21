@@ -33,7 +33,7 @@ public class Client implements Settings{
     private void gotMessage() {
         String message = messages.get(0);
         messages.remove(0);
-        System.out.println("Got Message: " + message); //TODO
+        //System.out.println("Got Message: " + message); //TODO
         int codeInt = Integer.parseInt(message);
         RECEIVER code = RECEIVER.valueOf(codeInt);
         switch (code) {
@@ -91,31 +91,31 @@ public class Client implements Settings{
     //Receiver
 
     public void receivedOtherFriendly() {
-        System.out.println("Other: Friendly");
+        //System.out.println("Other: Friendly");
     }
 
     public void receivedOtherAggressive() {
-        System.out.println("Other: Aggressive");
+        //System.out.println("Other: Aggressive");
     }
 
     public void receivedMyselfFriendly() {
-        System.out.println("Me: Friendly");
+        //System.out.println("Me: Friendly");
     }
 
     public void receivedMyselfAggressive() {
-        System.out.println("Me: Aggressive");
+        //System.out.println("Me: Aggressive");
     }
 
     public void receivedGameStart() {
-        System.out.println("Game has started");
+        //System.out.println("Game has started");
     }
 
     public void receivedGameEnd() {
-        System.out.println("Game has ended");
+        //System.out.println("Game has ended");
     }
 
     public void receivedNextRound() {
-        System.out.println("Next Round");
+        //System.out.println("Next Round");
     }
 
     public void receivedWrongMessage() {
@@ -170,7 +170,7 @@ public class Client implements Settings{
                     //Only adds messages with content
                     if(!s.isEmpty()) {
                         messages.add(s);
-                        System.out.println(s);
+                        //System.out.println(s);
                         gotMessage();
                     }
                 }
