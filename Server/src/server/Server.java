@@ -24,6 +24,7 @@ public class Server extends Thread{
         this.hasGameStarted = false;
         //serverThread = new Thread(this);
         //serverThread.start();
+        this.game = game;
         this.start();
     }
 

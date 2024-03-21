@@ -1,6 +1,8 @@
 package server;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -8,6 +10,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import client.TestClientForm;
 import settings.Settings;
 
 public class Game implements GameSettings{
@@ -22,6 +25,7 @@ public class Game implements GameSettings{
     private JList lstPlayers;
     private JTextField txtPlayerName;
     private JButton btnSubmitPlayerName;
+    private JLabel lblGameFinished;
     private JButton btnJoins;
 
     private List<Integer> points;
@@ -31,6 +35,9 @@ public class Game implements GameSettings{
     private boolean even;
 
     private List<String> names;
+    private int selectedItem;
+    private String selectedName;
+
 
     private final int DELAY_MIL = 1;
     private final int DELAY_NAN = 10;
@@ -38,13 +45,15 @@ public class Game implements GameSettings{
 
     public Game() {
         this.server = new Server(8080, this);
-       // for (int i = 0; i < 5; i++) {
-       //     TestClientForm.start();
-       // }
+
         //startGame(0,1);
         txaPoints.setText("Points: ");
         points = new CopyOnWriteArrayList<>();
+        names = new CopyOnWriteArrayList<>();
 
+        for (int i = 0; i < 5; i++) {
+            TestClientForm.start();
+        }
         //start();
 
         btnStart.addActionListener(new ActionListener() {
@@ -63,12 +72,37 @@ public class Game implements GameSettings{
             }
         });
 
+        lstPlayers.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                selectedItem = lstPlayers.getSelectedIndex();
+                if(selectedItem >= 0 && selectedItem < names.size()) {
+                    txtPlayerName.setText(names.get(selectedItem));
+                }
+            }
+        });
+        btnSubmitPlayerName.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                names.set(selectedItem, txtPlayerName.getText());
+                refreshNames();
+            }
+        });
     }
 
     public void newPlayer() {
-
+        names.add(String.valueOf(server.clients.size()-1));
+        refreshNames();
     }
 
+    public synchronized void refreshNames() {
+        String s = "Players: \n";
+        for(int i = 0; i < names.size(); i++) {
+            s += names.get(i) + "\n";
+        }
+        txaPlayers.setText(s);
+        lstPlayers.setListData(names.toArray());
+    }
 
     public synchronized void refreshPoints() {
         txaPoints.setText(printPoints(points, even));
@@ -80,10 +114,10 @@ public class Game implements GameSettings{
         String s = "Points: \n";
         for(int i = 0; i < list.size(); i++) {
             if(evenNumberofPlayers) {
-                s += "Player " + i + ": " + list.get(i) + "\n";
+                s += "Player " + names.get(i) + ": " + list.get(i) + "\n";
             }else {
                 if(i != list.size()-1) {
-                    s += "Player " + i + ": " + list.get(i) + "\n";
+                    s += "Player " + names.get(i) + ": " + list.get(i) + "\n";
                 }
             }
         }
@@ -91,6 +125,7 @@ public class Game implements GameSettings{
     }
 
     private void start() {
+        lblGameFinished.setVisible(false);
         new Thread(){
             @Override
             public void run() {
@@ -153,6 +188,7 @@ public class Game implements GameSettings{
 
 
                 }
+                lblGameFinished.setVisible(true);
             }
         }.start();
         refreshPoints();
